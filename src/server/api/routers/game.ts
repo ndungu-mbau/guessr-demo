@@ -65,16 +65,23 @@ export const gameRouter = createTRPCRouter({
         })
         .returning();
 
+      if (!gameResult) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create game record",
+        });
+      }
+
       // Create bet record
       const [betResult] = await ctx.db
         .insert(bets)
         .values({
           userId,
-          gameId: gameResult?.id,
+          gameId: gameResult.id,
           amount,
           threshold,
-          isAbove,
           payout: won ? amount * payoutMultiplier : 0,
+          isAbove,
           won,
         })
         .returning();
